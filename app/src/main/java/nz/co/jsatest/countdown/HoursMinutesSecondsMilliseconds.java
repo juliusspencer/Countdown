@@ -19,11 +19,9 @@ public class HoursMinutesSecondsMilliseconds {
 
 	public String getHours() {
 		StringBuffer sb = new StringBuffer();
-		if (mHours > 0) {
-			if (mHours < 10) sb.append(0);
-			sb.append(mHours);
-			sb.append(":");
-		}
+		if (mHours < 10) sb.append(0);
+		sb.append(mHours);
+		sb.append(":");
 		return sb.toString();
 	}
 

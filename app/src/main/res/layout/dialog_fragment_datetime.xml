@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:gravity="center"
+	android:background="@android:color/background_light">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center">
+
+		<DatePicker
+			android:id="@+id/datepicker"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+
+		<TimePicker
+			android:id="@+id/timepicker"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+	</LinearLayout>
+
+	<EditText
+		android:id="@+id/url_edittext"
+		android:hint="@string/http_domain_your_image_tla"
+		android:inputType="textUri"
+		android:layout_width="512dp"
+		android:layout_height="wrap_content" />
+
+	<Button
+		android:id="@+id/ok_button"
+		android:layout_margin="24dp"
+		android:text="@android:string/ok"
+		android:layout_width="256dp"
+		android:layout_height="wrap_content" />
+</LinearLayout>

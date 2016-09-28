@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-
     <!-- Google colour picked colours -->
     <color name="blue">#465ee0</color>
     <color name="red">#b92b23</color>
     <color name="yellow">#d2a100</color>
     <color name="green">#3c8e35</color>
 	<color name="black_overlay">#66000000</color>
+
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">@color/blue</color>
+    <color name="colorAccent">@color/green</color>
+
 </resources>

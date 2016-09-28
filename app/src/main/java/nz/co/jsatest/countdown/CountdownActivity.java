@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -17,7 +18,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
 
 import java.util.Calendar;
@@ -37,21 +37,22 @@ import static android.view.View.VISIBLE;
  *
  * This was created using the Full Screen Activity wizard in Android Studio (~28/09/2016).
  */
-public class CountdownActivity extends AppCompatActivity {
+public class CountdownActivity extends AppCompatActivity implements DateTimeUrlFragment.Listener {
 
 	private static final int AUTO_HIDE_DELAY_MILLIS = 1000;
 	private static final int UI_ANIMATION_DELAY = 1000;
-	private static final long UPDATE_DELAY = 100;
+	private static final long UPDATE_DELAY = 61;
+	private static final String TAG_DATETIME_SELECTION = "tag_datetime_selection";
 
 	// timezone and event date/time
-	private static final String TIMEZONE_ID = "Pacific/Auckland";
-	private static final int EVENT_YEAR = 2016;
-	private static final int EVENT_MONTH = 10;
-	private static final int EVENT_DAY = 5;
-	private static final int EVENT_HOUR = 5;
-	private static final int EVENT_MINUTE = 0;
+	private int mEventYear = 2016;
+	private int mEventMonth = 10;
+	private int mEventDayOfMonth = 5;
+	private int mEventHour = 5;
+	private int mEventMinute = 0;
 	private static final int EVENT_SECOND = 0;
-	private static final String URL_TO_EVENT_IMAGE = "https://www.google.co.nz/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+	// url for image
+	private String mUrlToEventImage = "https://www.google.co.nz/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
 
 	// views
 	@BindView(R.id.fullscreen_content) View mContentView;
@@ -67,6 +68,7 @@ public class CountdownActivity extends AppCompatActivity {
 	private MediaPlayer mPlayer;
 	private boolean mVisible;
 	private Unbinder mUnbinder;
+	private DateTimeUrlFragment mDateTimePickerFragment;
 
 	@Override protected void attachBaseContext(Context newBase) {
 		super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
@@ -85,10 +87,7 @@ public class CountdownActivity extends AppCompatActivity {
 		mPlayer = new MediaPlayer();
 
 		// set up date
-		DateTimeZone timeZone = DateTimeZone.forID(TIMEZONE_ID);
-		mEventDateTime = new DateTime(EVENT_YEAR, EVENT_MONTH, EVENT_DAY, EVENT_HOUR, EVENT_MINUTE, EVENT_SECOND, timeZone);
-		mEventDateTime = new DateTime(2016, 10, 5, 5, 0, 0, timeZone);
-
+		updateDateTime();
 
 		// set the state of the system UI visibility
 		mVisible = true;
@@ -106,22 +105,20 @@ public class CountdownActivity extends AppCompatActivity {
 		mContentView.setOnTouchListener(mDelayHideTouchListener);
 		mContentView.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override public boolean onLongClick(View v) {
+				// show the dialog
+				mDateTimePickerFragment = DateTimeUrlFragment.newInstance();
+				getSupportFragmentManager().beginTransaction().add(android.R.id.content, mDateTimePickerFragment, TAG_DATETIME_SELECTION).commit();
+				return false;
+			}
+		});
+		mDaysTextView.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override public boolean onLongClick(View v) {
 				if(mPlayer.isPlaying()) stopPlayer();
 				else playBeep();
 				return false;
 			}
 		});
 	}
-
-	/**
-	 * A runnable to set update the view and set up another runnable after a delay
-	 */
-	private Runnable mUpdateRunnable = new Runnable() {
-		@Override public void run() {
-			mContentView.postDelayed(mUpdateRunnable, UPDATE_DELAY);
-			updateView();
-		}
-	};
 
 	/**
 	 * Start updating the display on start.
@@ -146,29 +143,68 @@ public class CountdownActivity extends AppCompatActivity {
 	}
 
 	/**
+	 * Update the event time.
+	 */
+	private void updateDateTime() {
+		mEventDateTime = new DateTime(mEventYear, mEventMonth, mEventDayOfMonth, mEventHour, mEventMinute, EVENT_SECOND);
+	}
+
+	/**
+	 * A runnable to set update the view and set up another runnable after a delay
+	 */
+	private Runnable mUpdateRunnable = new Runnable() {
+		@Override public void run() {
+			mContentView.postDelayed(mUpdateRunnable, UPDATE_DELAY);
+			updateView();
+		}
+	};
+
+	/**
+	 * Handle setting the event url and date time from a dialog
+	 */
+	@Override public void onDateTimeUrlSelected(String url, int year, int month, int dayOfMonth, int hour, int minute) {
+		if(!TextUtils.isEmpty(url)) mUrlToEventImage = url;
+
+		mEventYear = year;
+		mEventMonth = month;
+		mEventDayOfMonth = dayOfMonth;
+		mEventHour = hour;
+		mEventMinute = minute;
+		updateDateTime();
+
+		getSupportFragmentManager().beginTransaction().remove(mDateTimePickerFragment).commit();
+
+		// clear and restart updating
+		mContentView.removeCallbacks(mUpdateRunnable);
+		mContentView.postDelayed(mUpdateRunnable, UPDATE_DELAY);
+	}
+
+	/**
 	 * Update the views
 	 */
 	private void updateView() {
 		DateTime now = new DateTime();
 		// update the time if we're still before the event time
-		if(mEventDateTime.isAfterNow()) {
-			mDaysTextView.setText(getDaysUntilEvent(now));
-			mDaysTextView.setVisibility(getDaysUntilEvent(now) == null ? GONE : VISIBLE);
+		boolean afterNow = mEventDateTime.isAfterNow();
+		String daysUntilEvent = getDaysUntilEvent(now);
+
+		// update view visibility
+		mDaysTextView.setVisibility(daysUntilEvent == null ? GONE : VISIBLE);
+		mHoursTextView.setVisibility(afterNow ? VISIBLE : GONE);
+		mMinutesTextView.setVisibility(afterNow ? VISIBLE : GONE);
+		mSecondsTextView.setVisibility(afterNow ? VISIBLE : GONE);
+		mMillisecondsTextView.setVisibility(afterNow ? VISIBLE : GONE);
+		mEventImageView.setVisibility(afterNow ? GONE : VISIBLE);
+
+		if(afterNow) {
+			// update the text
+			mDaysTextView.setText(daysUntilEvent);
 			HoursMinutesSecondsMilliseconds timeUntilEvent = getTimeUntilEvent(now);
 			mHoursTextView.setText(timeUntilEvent.getHours());
 			mMinutesTextView.setText(timeUntilEvent.getMinutes());
 			mSecondsTextView.setText(timeUntilEvent.getSeconds());
 			mMillisecondsTextView.setText(timeUntilEvent.getMilliseconds());
 		} else {
-			// remove the time
-			mDaysTextView.setVisibility(GONE);
-			mHoursTextView.setVisibility(GONE);
-			mMinutesTextView.setVisibility(GONE);
-			mSecondsTextView.setVisibility(GONE);
-			mMillisecondsTextView.setVisibility(GONE);
-			// show the image
-			mEventImageView.setVisibility(VISIBLE);
-
 			// load the image
 			loadImage();
 		}
@@ -181,7 +217,7 @@ public class CountdownActivity extends AppCompatActivity {
 		// stop updating the views
 		mContentView.removeCallbacks(mUpdateRunnable);
 		// load the image
-		Glide.with(this).load(URL_TO_EVENT_IMAGE)
+		Glide.with(this).load(mUrlToEventImage)
 				.fitCenter()
 				.crossFade(UI_ANIMATION_DELAY)
 				.into(mEventImageView);
@@ -308,7 +344,7 @@ public class CountdownActivity extends AppCompatActivity {
 			// Note that some of these constants are new as of API 16 (Jelly Bean)
 			// and API 19 (KitKat). It is safe to use them, as they are inlined
 			// at compile-time and do nothing on earlier devices.
-			mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+			if(mContentView != null) mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
 					| View.SYSTEM_UI_FLAG_FULLSCREEN
 					| View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY

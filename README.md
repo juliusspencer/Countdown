@@ -2,15 +2,16 @@ Countdown
 =========
 
 This is simply a hacked together project (in a minimum amount of time) for Android which shows a countdown timer and loads an image. In 
-addition long pressing on the time toggles playing a beep sound. When the countdown completes an image is loaded from a URL.
+addition, long pressing on the time toggles playing a beep sound and long pressing anywhere else presents a fragment for 
+selecting the event date / time and image URL. When the countdown completes an image is loaded from the URL.
 
 ##Getting started
 
 ###Event image URL
-Set the URL in the CountdownActivity.
+Long press anywhere but the days (if they are showing).
 
 ###Event time
-Configure your Timezone and the event time in the CountdownActivity; see "timezone and event date/time".
+Long press anywhere but the days (if they are showing).
 
 ###Font size
 Change the size of the font in the dimens.xml to suit your screen.
