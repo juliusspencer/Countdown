@@ -5,6 +5,8 @@ This is simply a hacked together project (in a minimum amount of time) for Andro
 addition, long pressing on the time toggles playing a beep sound and long pressing anywhere else presents a fragment for 
 selecting the event date / time and image URL. When the countdown completes an image is loaded from the URL.
 
+![beep beep, beep beep](screenshots/example1.png "Example countdown")
+
 ##Getting started
 
 ###Event image URL
