@@ -18,7 +18,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import org.joda.time.DateTime;
-import org.joda.time.Days;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -30,6 +29,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static org.joda.time.Days.daysBetween;
 
 /**
  * A full-screen activity that shows days and time until an event along with an image that will download and fade in on completion
@@ -111,7 +111,7 @@ public class CountdownActivity extends AppCompatActivity implements DateTimeUrlF
 				return false;
 			}
 		});
-		mDaysTextView.setOnLongClickListener(new View.OnLongClickListener() {
+		mSecondsTextView.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override public boolean onLongClick(View v) {
 				if(mPlayer.isPlaying()) stopPlayer();
 				else playBeep();
@@ -230,8 +230,9 @@ public class CountdownActivity extends AppCompatActivity implements DateTimeUrlF
 	 * @return the number of days until the event "n days"
 	 */
 	private String getDaysUntilEvent(DateTime now) {
-		if (Days.daysBetween(now, mEventDateTime).getDays() == 0) return null;
-		return Days.daysBetween(now, mEventDateTime).getDays() + " days";
+		int days = daysBetween(now, mEventDateTime).getDays();
+		if (days == 0) return null;
+		return getResources().getQuantityString(R.plurals.days, days, days);
 	}
 
 	/**
